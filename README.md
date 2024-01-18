@@ -47,10 +47,15 @@ jupyter notebook
 In the Jupyter interface, navigate to Run_CNN_Model.ipynb and open it. You can run the cells in the notebook to train and evaluate the model interactively.
 
 
-## Current issues
+## Things to work with
 1. Handling of positive weights (class imbalance)
 2. The classification matrix is not in the anticipated structure
-3. Issues with predicted_labels_string (all "bo_1_bo_6")
+3. Change the (relative) path of stimulus in python script
+4. Handle parallel processing and gpu issues (for tensorflow)
+5. Find out the modules that needs to be load and unload in sbatch script
+6. Run the sample dataset on midway
+7. Use VGG model on midway
+8. Issues with predicted_labels_string (all "bo_1_bo_6")
 
 
 
