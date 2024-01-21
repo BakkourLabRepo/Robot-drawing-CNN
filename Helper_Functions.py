@@ -14,7 +14,7 @@ from PIL import Image
 
 
 #################### Helper functions for the robot task #######################
-def images_and_labels(cwd, feature_num, class_num, labels):
+def images_and_labels(folder_path, feature_num, class_num, labels):
     """
     Outputs 1) a numpy array where the first dimension equals to the number of 
     robots and the second and third dimensions equal to the pixel*pixel size of 
@@ -23,8 +23,7 @@ def images_and_labels(cwd, feature_num, class_num, labels):
     "feature * class" combinations.
 
     Inputs:
-        cwd(str): working directory where the robot images are stored 
-            (default to be currrent working directory)
+        folder_path(str): directory where the robot images are stored 
         feature_num (int): number of features
         class_num (int): number of options per class
         labels (lst): all possible labels ("feature * class_num" combinations)
@@ -39,7 +38,7 @@ def images_and_labels(cwd, feature_num, class_num, labels):
     # Initialize column names for the dataFrame
     label_df = pd.DataFrame(columns=labels)
 
-    for dirpath, _, filenames in os.walk(cwd):
+    for dirpath, _, filenames in os.walk(folder_path):
         for f in filenames:
             if f.endswith('.png'):
                 full_path = os.path.join(dirpath, f)
