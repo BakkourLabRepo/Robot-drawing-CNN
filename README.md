@@ -8,8 +8,6 @@ This project aims to develop and train a convolutional neural network (CNN) mode
 
 - `Run_CNN_Model.py`: The Python script version of the Jupyter notebook for training and evaluating the CNN model. Suitable for running in Midway3. 
 
-- `Run_CNN_Model.ipynb`: A Jupyter notebook illustrating the workflow of training and evaluating the Convolutional Neural Network (CNN) model. Includes code with annotations and visualizations.
-  
 - `Run_CNN.sbatch`: A sbatch file for running on midway.
 
 - `Model Performance.txt`: A text file summarizing the performance metrics of the CNN model. Includes data such as loss, accuracy, precision, and recall on validation and test sets.
