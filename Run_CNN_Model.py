@@ -66,8 +66,8 @@ positive_weights = tf.constant(positive_weights, dtype=tf.float32)
 #               #
 #################
 # Store the directory that stores stimulus in the midway environment
-project_path = os.path.normpath(os.path.join(os.getcwd(), "../.."))
-robots_stim_path = os.path.normpath(os.path.join(project_path, "robots", "stim"))
+project_path = "/project/bakkour/projects/feat_predict/"
+robots_stim_path = os.path.join(project_path, "robots", "stim/")
 
 image_array, label_df = images_and_labels(robots_stim_path, feature_num,class_num, labels)
 print(f"The shape of the image array is {image_array.shape}")
