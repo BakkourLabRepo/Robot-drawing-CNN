@@ -3,10 +3,10 @@
 #SBATCH --account=ssd
 #SBATCH --output=Robot_Drawing_CNN.out
 #SBATCH --error=Robot_Drawing_CNN.err
-#SBATCH --time=24:00:00
+#SBATCH --time=2:00:00
 #SBATCH --partition=gpu # gpu partition
-#SBATCH --mem-per-gpu=30G # mem per GPU        
-#SBATCH --gres=gpu:2 # Number of GPUs requested
+#SBATCH --mem-per-gpu=5G # mem per GPU        
+#SBATCH --gres=gpu:1 # Number of GPUs requested
 
 module unload python cudnn cuda tensorflow
 module unload gcc/13.2.0
