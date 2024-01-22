@@ -13,10 +13,50 @@ from keras.models import load_model
 from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
 import os
+import sys
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import contextlib
 
+
+#########################################
+#                                       #
+# Define configuration and usage of GPU #
+#                                       #
+#########################################
+
+# Modality (CPU vs GPU)
+core = sys.argv[1]
+# Partition
+partition = sys.argv[2]
+
+if core == "gpu":
+    physical_gpus = tf.config.list_physical_devices('GPU')
+    if physical_gpus:
+        try:
+            # Set memory growth to true for all GPUs
+            for gpu in physical_gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(physical_gpus), "Physical GPU(s),", len(logical_gpus), "Logical GPU(s)")
+        except RuntimeError as e:
+            print(e)
+
+# Initialize tf.distribute.MirroredStrategy
+strategy = tf.distribute.MirroredStrategy()
+print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+
+# Adjust batch size based on the number of replicas
+base_batch_size = 32 # Base batch size
+base_save_freq = 2 # Base save frequency
+batch_size = base_batch_size * strategy.num_replicas_in_sync
+
+# Printing detected devices (CPU / GPU)
+print("Detected devices:")
+print(tf.config.list_physical_devices())
+
+# Save frequency (number of epochs * batch_size)
+save_frequency = base_save_freq * batch_size
 
 #########################################
 #                                       #
@@ -36,9 +76,6 @@ label_num = len(labels)
 split_ratio = (0.8, 0.1, 0.1)
 # An integer for reproducibility of data spliting using sklearn.model_selection
 random_state = 42 
-
-# Batch size
-batch_size = 32
 
 # Dropout rate
 dropout_rate = 0.4
@@ -114,44 +151,46 @@ print("-----------------------------------------------------------------------")
 #  Build and compile the model  #
 #                               #
 #################################
+
 # Build a simple CNN (using 5*5 filters)
-model = Sequential([
-    Conv2D(32, (5, 5), activation='relu', input_shape=(750, 750, 1)),
-    MaxPooling2D(2, 2),
-    Conv2D(64, (3, 3), activation='relu'),
-    MaxPooling2D(2, 2),
-    Conv2D(128, (3, 3), activation='relu'),  # Additional Conv layer
-    MaxPooling2D(2, 2),
-    Flatten(),
-    Dense(256, activation='relu'),  # Increased units
-    Dropout(dropout_rate), 
-    Dense(128, activation='relu'),
-    Dropout(dropout_rate),  
-    Dense(30, activation='sigmoid')
-])
+with strategy.scope():
+    model = Sequential([
+        Conv2D(32, (5, 5), activation='relu', input_shape=(750, 750, 1)),
+        MaxPooling2D(2, 2),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D(2, 2),
+        Conv2D(128, (3, 3), activation='relu'),  # Additional Conv layer
+        MaxPooling2D(2, 2),
+        Flatten(),
+        Dense(256, activation='relu'),  # Increased units
+        Dropout(dropout_rate), 
+        Dense(128, activation='relu'),
+        Dropout(dropout_rate),  
+        Dense(30, activation='sigmoid')
+    ])
 
-# Compile the CNN model
-recall = Recall(thresholds=p_r_threshold)
-precision = Precision(thresholds=p_r_threshold)
-accuracy = BinaryAccuracy(threshold=p_r_threshold)
+    # Compile the CNN model
+    recall = Recall(thresholds=p_r_threshold)
+    precision = Precision(thresholds=p_r_threshold)
+    accuracy = BinaryAccuracy(threshold=p_r_threshold)
 
-model.compile(loss=create_weighted_cross_entropy(positive_weights),
-              optimizer=Adam(learning_rate=base_learning_rate),
-              metrics=[recall, precision, accuracy])
+    model.compile(loss=create_weighted_cross_entropy(positive_weights),
+                optimizer=Adam(learning_rate=base_learning_rate),
+                metrics=[recall, precision, accuracy])
 
-# Early stopping callback
-early_stopping = EarlyStopping(monitor='val_loss', 
-                               patience=3, verbose=1, mode='min', 
-                               restore_best_weights=True)
-
-##########################################
-#                                        #
-#  Fit, predict, and evaluate the model  #
-#                                        #
-##########################################
-
-model.fit(train_data, epochs=20, 
+    # Early stopping callback
+    early_stopping = EarlyStopping(monitor='val_loss', 
+                                patience=3, verbose=1, mode='min', 
+                                restore_best_weights=True)
+    
+    model.fit(train_data, epochs=20, 
           validation_data=val_data, callbacks=[early_stopping])
+
+##########################################
+#                                        #
+#           Evaluate the model           #
+#                                        #
+##########################################
 
 # Save model performance to a txt file
 with open("Model Performance.txt", "w") as f:
