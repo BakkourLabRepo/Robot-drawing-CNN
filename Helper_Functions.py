@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tensorflow_addons as tfa
+# import tensorflow_addons as tfa
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -118,8 +118,7 @@ def preprocessing(image_array, label_df,
     test_data = tf.data.Dataset.from_tensor_slices((image_test, label_test))
 
     # Apply data augmentation (only) to the training dataset
-    train_data = train_data.map(data_augmentation, 
-                                num_parallel_calls=tf.data.experimental.AUTOTUNE)
+    # train_data = train_data.map(data_augmentation, num_parallel_calls=tf.data.experimental.AUTOTUNE)
 
     # Batching, shuffling, and prefetching
     prefetch_size = tf.data.experimental.AUTOTUNE
@@ -137,39 +136,39 @@ def preprocessing(image_array, label_df,
     return train_data, val_data, test_data
 
 
-def data_augmentation(image, label, noise_mean=0.0, noise_std=0.1):
-    """
-    Performsn several data augmentation techniques to the image. 
+# def data_augmentation(image, label, noise_mean=0.0, noise_std=0.1):
+#     """
+#     Performsn several data augmentation techniques to the image. 
 
-    Inputs:
-        1) train_data (numpy array): image
-        2) label (numpy array): feature vector associated with the image
-        3) noise_mean (float): mean of Gaussian random noise
-        4) noise_std (float): standard deviation of Gaussian random noise
+#     Inputs:
+#         1) train_data (numpy array): image
+#         2) label (numpy array): feature vector associated with the image
+#         3) noise_mean (float): mean of Gaussian random noise
+#         4) noise_std (float): standard deviation of Gaussian random noise
     
-    Returns (numpy array): image with data augmentation
-    """
+#     Returns (numpy array): image with data augmentation
+#     """
 
-    # Reshape the black-and-white image to add a channel dimension
-    image = tf.expand_dims(image, -1)
+#     # Reshape the black-and-white image to add a channel dimension
+#     image = tf.expand_dims(image, -1)
 
-    # Random flips
-    image = tf.image.random_flip_left_right(image)
-    image = tf.image.random_flip_up_down(image)
+#     # Random flips
+#     image = tf.image.random_flip_left_right(image)
+#     image = tf.image.random_flip_up_down(image)
 
-    # Random rotations (random angles)
-    rotate_angle = tf.random.uniform(shape=[], minval=-math.pi, maxval=math.pi)
-    image = tfa.image.rotate(image, rotate_angle)
+#     # Random rotations (random angles)
+#     rotate_angle = tf.random.uniform(shape=[], minval=-math.pi, maxval=math.pi)
+#     image = tfa.image.rotate(image, rotate_angle)
 
-    # Add random noise
-    noise = tf.random.normal(shape=tf.shape(image), 
-                             mean=noise_mean, stddev=noise_std, 
-                             dtype=tf.float64)
-    image = image + noise
-    # Ensure that the image is still valid
-    image = tf.clip_by_value(image, 0.0, 1.0) 
+#     # Add random noise
+#     noise = tf.random.normal(shape=tf.shape(image), 
+#                              mean=noise_mean, stddev=noise_std, 
+#                              dtype=tf.float64)
+#     image = image + noise
+#     # Ensure that the image is still valid
+#     image = tf.clip_by_value(image, 0.0, 1.0) 
 
-    return image, label
+#     return image, label
 
 
 def create_weighted_cross_entropy(positive_weights):
