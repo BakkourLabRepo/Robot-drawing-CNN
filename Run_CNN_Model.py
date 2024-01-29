@@ -23,38 +23,24 @@ import contextlib
 # Define configuration and usage of GPU #
 #                                       #
 #########################################
-
-import sys
-import tensorflow as tf
-
 # Modality (CPU vs GPU)
 core = sys.argv[1]
 # Partition
 # partition = sys.argv[2]
 
-if core == "gpu":
-    # Initialize the SlurmClusterResolver
-    resolver = tf.distribute.cluster_resolver.SlurmClusterResolver()
-    tf.config.experimental_connect_to_cluster(resolver)
-    tf.tpu.experimental.initialize_tpu_system(resolver)
-    
-    # Configure GPUs
-    physical_gpus = tf.config.list_physical_devices('GPU')
-    if physical_gpus:
-        try:
-            # Set memory growth to true for all GPUs
-            for gpu in physical_gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-            print(len(physical_gpus), "Physical GPU(s),", len(logical_gpus), "Logical GPU(s)")
-        except RuntimeError as e:
-            print(e)
+# Configure GPUs or CPU
+physical_gpus = tf.config.list_physical_devices('GPU')
+if physical_gpus:
+    try:
+        # Set memory growth to true for all GPUs
+        for gpu in physical_gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        # Error handling
+        print(e)
 
-    # Initialize a distribution strategy
-    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=resolver)
-else:
-    strategy = tf.distribute.MirroredStrategy()
-
+# Initialize a distribution strategy for both GPU and CPU
+strategy = tf.distribute.MirroredStrategy()
 print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
 # Adjust batch size based on the number of replicas
