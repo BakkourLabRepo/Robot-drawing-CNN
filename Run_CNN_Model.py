@@ -12,7 +12,6 @@ from keras.metrics import Recall, Precision, BinaryAccuracy
 from keras.models import load_model
 from keras.callbacks import EarlyStopping
 import matplotlib.pyplot as plt
-import os
 import sys
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
@@ -25,12 +24,21 @@ import contextlib
 #                                       #
 #########################################
 
+import sys
+import tensorflow as tf
+
 # Modality (CPU vs GPU)
 core = sys.argv[1]
 # Partition
-partition = sys.argv[2]
+# partition = sys.argv[2]
 
 if core == "gpu":
+    # Initialize the SlurmClusterResolver
+    resolver = tf.distribute.cluster_resolver.SlurmClusterResolver()
+    tf.config.experimental_connect_to_cluster(resolver)
+    tf.tpu.experimental.initialize_tpu_system(resolver)
+    
+    # Configure GPUs
     physical_gpus = tf.config.list_physical_devices('GPU')
     if physical_gpus:
         try:
@@ -42,8 +50,11 @@ if core == "gpu":
         except RuntimeError as e:
             print(e)
 
-# Initialize tf.distribute.MirroredStrategy
-strategy = tf.distribute.MirroredStrategy()
+    # Initialize a distribution strategy
+    strategy = tf.distribute.experimental.MultiWorkerMirroredStrategy(cluster_resolver=resolver)
+else:
+    strategy = tf.distribute.MirroredStrategy()
+
 print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
 # Adjust batch size based on the number of replicas
@@ -104,7 +115,8 @@ positive_weights = tf.constant(positive_weights, dtype=tf.float32)
 #################
 # Store the directory that stores stimulus in the midway environment
 project_path = "/project/bakkour/projects/feat_predict/"
-robots_stim_path = os.path.join(project_path, "robots", "stim/")
+# robots_stim_path = os.path.join(project_path, "robots", "stim/")
+robots_stim_path = "combs"
 
 image_array, label_df = images_and_labels(robots_stim_path, feature_num,class_num, labels)
 print(f"The shape of the image array is {image_array.shape}")
