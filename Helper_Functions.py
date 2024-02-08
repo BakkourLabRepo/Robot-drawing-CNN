@@ -5,9 +5,9 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, \
     multilabel_confusion_matrix, roc_curve, auc
-import matplotlib.pyplot as plt
-import seaborn
-import math
+#import matplotlib.pyplot as plt
+#import seaborn
+#import math
 import os
 import re
 from PIL import Image
@@ -233,7 +233,7 @@ def test_predict_eval(binary_prediction, true_labels,
     fpr = dict() # False Positive Rate
     tpr = dict() # True Positive Rate
     roc_auc = dict()
-
+    """
     plt.figure(figsize=(20, 20))
     for i in range(feature_num * class_num):
         # Plot conofusion matrix for each label
@@ -253,5 +253,5 @@ def test_predict_eval(binary_prediction, true_labels,
 
     # Save the image
     plt.savefig('confusion_matrices.jpg', format='jpg', dpi=300)
-
+    """
     return classifi_report, confusion_matrix, roc_auc

@@ -9,12 +9,10 @@ from keras.models import Sequential
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.metrics import Recall, Precision, BinaryAccuracy
-from keras.models import load_model
+#from keras.models import load_model
 from keras.callbacks import EarlyStopping
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import sys
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import contextlib
 
 
@@ -125,7 +123,7 @@ image_batch, label_batch = next(iter(train_data.take(1)))
 
 # Number of images to display from the batch
 num_images = len(image_batch)
-
+"""
 plt.figure(figsize=(16, 16))
 for i in range(num_images):
     plt.subplot(num_images // 4, 4, i + 1)
@@ -139,7 +137,8 @@ for i in range(num_images):
     for i in feature_idx:
         string += (labels[i] + "_")
     plt.title(string[:-1])
-    plt.axis("off")
+    plt.axis('off')
+"""
 print("-----------------------------------------------------------------------")
 
 
