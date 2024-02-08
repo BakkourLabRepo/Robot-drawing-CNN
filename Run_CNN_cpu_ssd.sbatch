@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=CNN_robot_task_cpu
-#SBATCH --account=pi-bakkour
+#SBATCH --account=ssd
 #SBATCH --output=CNN_robot_task_cpu.out
 #SBATCH --error=CNN_robot_task_cpu.err
 #SBATCH --time=00:10:00
