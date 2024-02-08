@@ -6,7 +6,7 @@
 #SBATCH --time=00:10:00
 #SBATCH --partition=ssd
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=40
+#SBATCH --mem-per-cpu=40G
 
 module unload python
 module load python/anaconda-2022.05
