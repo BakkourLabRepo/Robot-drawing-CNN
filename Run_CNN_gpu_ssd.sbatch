@@ -3,7 +3,7 @@
 #SBATCH --account=pi-bakkour
 #SBATCH --output=CNN_robot_task_gpu.out # output file
 #SBATCH --error=CNN_robot_task_gpu.err # error file
-#SBATCH --time=00:10:00 # runtime
+#SBATCH --time=01:00:00 # runtime
 #SBATCH --partition=gpu # gpu partition
 #SBATCH --mem-per-gpu=30G # mem per GPU
 #SBATCH --gres=gpu:2 # Number of GPUs requested
