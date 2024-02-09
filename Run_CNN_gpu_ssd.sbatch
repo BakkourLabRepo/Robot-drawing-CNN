@@ -14,5 +14,6 @@ module load cuda/11.2
 module load cudnn/11.2
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=/software/cuda-11.2-el8-x86_64
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/software/sbgrid/x86_64-linux/careless/0.2.7/lib/python3.8/site-packages/tensorrt/
+source activate tf
 
 python Run_CNN_Model.py gpu 
