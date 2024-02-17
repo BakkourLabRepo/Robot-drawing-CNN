@@ -26,6 +26,7 @@ parser.add_argument('--model_name', type=str, choices=["base", "VGG19"], require
 
 args = parser.parse_args()
 
+# Extract command-line arguments
 core = args.core
 environment = args.environment
 model_name = args.model_name
