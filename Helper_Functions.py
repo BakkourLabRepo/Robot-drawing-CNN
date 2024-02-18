@@ -5,6 +5,10 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, \
     multilabel_confusion_matrix, roc_curve, auc
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from keras.optimizers import Adam
+from keras.metrics import Recall, Precision, BinaryAccuracy
 #import matplotlib.pyplot as plt
 #import seaborn
 #import math
@@ -206,6 +210,68 @@ def create_weighted_cross_entropy(positive_weights):
     
     return weighted_cross_entropy_with_logits
 
+def compile_model(model, dropout_rate, p_r_threshold, positive_weights, base_learning_rate):
+    '''
+    Compiles a tensorflow model.
+
+    Inputs:
+        model (str): model name (e.g., "base", "VGG19")
+        dropout_rate (float):
+        p_r_threshold (float): threshoold to decide which class the predicted probability points to
+        positive_weights (float): weights to account for imbalanced dataset
+        base_learning_rate (float): base learning rate for the model
+
+    Returns: compiled tensorflow object
+    '''
+    # Base model (a simple CNN using 5*5 filters)
+    if model == "base":
+        model = Sequential([
+            Conv2D(32, (5, 5), activation='relu', input_shape=(750, 750, 1)),
+            MaxPooling2D(2, 2),
+            Conv2D(64, (3, 3), activation='relu'),
+            MaxPooling2D(2, 2),
+            Conv2D(128, (3, 3), activation='relu'),  # Additional Conv layer
+            MaxPooling2D(2, 2),
+            Flatten(),
+            Dense(256, activation='relu'),  # Increased units
+            Dropout(dropout_rate), 
+            Dense(128, activation='relu'),
+            Dropout(dropout_rate),  
+            Dense(30, activation='sigmoid')
+        ])
+
+    # Compile the CNN model
+    recall = Recall(thresholds=p_r_threshold)
+    precision = Precision(thresholds=p_r_threshold)
+    accuracy = BinaryAccuracy(threshold=p_r_threshold)
+
+    model.compile(loss=create_weighted_cross_entropy(positive_weights),
+                  optimizer=Adam(learning_rate=base_learning_rate),
+                  metrics=[recall, precision, accuracy])
+    
+    return model
+
+def find_last_checkpoint(checkpoint_dir):
+    """
+    Find the last checkpoint in the given checkpoint directory.
+
+    Inputs:
+        checkpoint_dir (str): checkpoint directory
+    
+    Returns: last checkpoint path and last epoch number
+    
+    """
+    checkpoint_files = [f for f in os.listdir(checkpoint_dir) if f.endswith('.h5')]
+    if not checkpoint_files:
+        return None, 0  # No checkpoint found
+
+    # Extract epoch numbers and sort files by them
+    epochs = [int(re.search(r"model-(\d+)-", f).group(1)) for f in checkpoint_files]
+    last_epoch = max(epochs)
+    last_checkpoint = os.path.join(checkpoint_dir, f"model-{last_epoch:02d}-*.h5")
+
+    return last_checkpoint, last_epoch
+
 
 def test_predict_eval(binary_prediction, true_labels, 
                       feature_num, class_num, labels):
@@ -226,13 +292,17 @@ def test_predict_eval(binary_prediction, true_labels,
     classifi_report = classification_report(true_labels, binary_prediction,
                                             target_names=labels)
     
-    confusion_matrix = multilabel_confusion_matrix(true_labels, 
-                                                   binary_prediction)
+    confusion_matrix = multilabel_confusion_matrix(true_labels, binary_prediction)
 
-    # Compute ROC curve and ROC area for each class
+    # Compute area under ROC curve for each class
     fpr = dict() # False Positive Rate
     tpr = dict() # True Positive Rate
     roc_auc = dict()
+    for i in range(len(labels)):
+        fpr[i], tpr[i], _ = roc_curve(true_labels[:, i], binary_prediction[:, i])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    
+    # Temporarily comment out plotting confusion matrix part
     """
     plt.figure(figsize=(20, 20))
     for i in range(feature_num * class_num):
@@ -244,14 +314,10 @@ def test_predict_eval(binary_prediction, true_labels,
         plt.title(labels[i])
         plt.xlabel('Predicted')
         plt.ylabel('True')
-
-        # Compute ROC curve and area
-        fpr[i], tpr[i], _ = roc_curve(true_labels.iloc[:, i], 
-                                      binary_prediction[:, i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
     plt.tight_layout()
 
     # Save the image
     plt.savefig('confusion_matrices.jpg', format='jpg', dpi=300)
     """
+    
     return classifi_report, confusion_matrix, roc_auc

@@ -8,7 +8,7 @@ import tensorflow as tf
 from keras.models import load_model
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 #import matplotlib.pyplot as plt
-import sys
+#import sys
 import contextlib
 import argparse
 
@@ -19,9 +19,8 @@ import argparse
 #########################################
 parser = argparse.ArgumentParser(description='Process some inputs.')
 parser.add_argument('core', type=str, help='Modality: CPU vs GPU')
-parser.add_argument('--envrionment', type=str, choices=["local", "midway"], required=True, 
-                    help="Specify 'local' for running on a local machine or 'midway' for running on the Midway cluster."
-)
+parser.add_argument('--environment', type=str, choices=["local", "midway"], required=True, 
+                    help="Specify 'local' for running on a local machine or 'midway' for running on the Midway cluster.")
 parser.add_argument('--model_name', type=str, choices=["base", "VGG19"], required=True, help='The name of the model')
 
 args = parser.parse_args()
@@ -36,8 +35,6 @@ model_name = args.model_name
 # Define configuration and usage of GPU #
 #                                       #
 #########################################
-
-core = sys.argv[1]
 # Partition
 # partition = sys.argv[2]
 
@@ -107,9 +104,11 @@ POSITIVE_WEIGHTS += [POSITIVE_WEIGHT_OTHER]*(TOTAL_FEATURES - CLASS_NUM)
 POSITIVE_WEIGHTS = tf.constant(POSITIVE_WEIGHTS, dtype=tf.float32)
 
 # Model checkpoint directory
-CHECKPOINT_DIR = "./model_checkpoint"
+CHECKPOINT_DIR = "ModelCheckpoint"
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 # SavedModel directory
-SAVEDMODEL_DIR = "./Saved"
+SAVEDMODEL_DIR = "SavedModel"
+os.makedirs(SAVEDMODEL_DIR, exist_ok=True)
 
 #################
 #               #
@@ -176,7 +175,7 @@ early_stopping = EarlyStopping(monitor='val_loss',
 
 # Define checkpoint callback
 model_checkpoint_callback = ModelCheckpoint(
-    filepath='model_checkpoint/model-{epoch:02d}-{val_loss:.2f}.h5',
+    filepath=f'{CHECKPOINT_DIR}/{model_name}/model-{{epoch:02d}}-{{val_loss:.2f}}.h5',
     save_weights_only=False,
     monitor='val_loss',
     mode='min',
@@ -272,5 +271,8 @@ testing_data_prediction.to_csv('testing_data_prediction.csv', index=False)
 #  Save the model  #
 #                  #
 ####################
-model.save('test_model')
-# model = load_model('test_model')
+model.save(f'{SAVEDMODEL_DIR}/{model_name}')
+
+
+# To load the whole model:
+# model = load_model(f'{SAVEDMODEL_DIR}/{model_name}')
