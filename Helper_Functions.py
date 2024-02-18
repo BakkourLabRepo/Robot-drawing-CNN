@@ -9,7 +9,7 @@ from keras.models import Sequential, Model
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.metrics import Recall, Precision, BinaryAccuracy
-from keras.preprocessing import image
+from keras.utils import load_img
 from keras.applications.vgg19 import preprocess_input as preprocess_input_vgg19
 from keras.applications.vgg19 import VGG19
 #import matplotlib.pyplot as plt
@@ -53,7 +53,7 @@ def images_and_labels(folder_path, model_name, feature_num, class_num, labels):
                 
                 if model_name == "VGG19":
                     # For using VGG19, convert it into the target size
-                    image_pixels = image.load_img(full_path, target_size=(224, 224))
+                    image_pixels = load_img(full_path, target_size=(224, 224))
                 else:
                     # Load image files into a 2D numpy array where each value represents a pixel' intensity (from 0 to 255)
                     image_pixels = Image.open(full_path)

@@ -126,7 +126,7 @@ def main():
     elif environment == "local":
         robots_stim_path = "combs/"
 
-    image_array, label_df = images_and_labels(robots_stim_path, FEATURE_NUM, CLASS_NUM, LABELS)
+    image_array, label_df = images_and_labels(robots_stim_path, model_name, FEATURE_NUM, CLASS_NUM, LABELS)
     print(f"The shape of the image array is {image_array.shape}")
     print("-----------------------------------------------------------------------")
     print("The first five rows of FEATURE vectors dataframe")
@@ -139,9 +139,8 @@ def main():
     #  Preprocess data  #
     #                   #
     #####################
-    train_data, val_data, test_data = preprocessing(image_array, label_df, 
-                                                    SPLIT_RATIO, RANDOM_STATE,
-                                                    batch_size)
+    train_data, val_data, test_data = preprocessing(image_array, model_name, label_df, 
+                                                    SPLIT_RATIO, RANDOM_STATE, batch_size)
 
     print("Diplay the first batch of images alongside their associated LABELS")
     image_batch, label_batch = next(iter(train_data.take(1)))
@@ -265,7 +264,7 @@ def main():
                                                     true_labels_string)),
                                         columns=["Predicted", "True"])
     # Save DataFrame to a text file, using comma as the delimiter
-    testing_data_prediction.to_csv('testing_data_prediction.csv', index=False)
+    testing_data_prediction.to_csv(f"{ModelPerformance_DIR}/{model_name}-testing_data_prediction.csv", index=False)
 
 
     ####################
