@@ -210,7 +210,7 @@ def create_weighted_cross_entropy(positive_weights):
     
     return weighted_cross_entropy_with_logits
 
-def compile_model(model, dropout_rate, p_r_threshold, positive_weights, base_learning_rate):
+def compile_model(model_name, dropout_rate, p_r_threshold, positive_weights, base_learning_rate):
     '''
     Compiles a tensorflow model.
 
@@ -224,7 +224,7 @@ def compile_model(model, dropout_rate, p_r_threshold, positive_weights, base_lea
     Returns: compiled tensorflow object
     '''
     # Base model (a simple CNN using 5*5 filters)
-    if model == "base":
+    if model_name == "base":
         model = Sequential([
             Conv2D(32, (5, 5), activation='relu', input_shape=(750, 750, 1)),
             MaxPooling2D(2, 2),
@@ -273,24 +273,25 @@ def find_last_checkpoint(checkpoint_dir):
     return last_checkpoint, last_epoch
 
 
-def test_predict_eval(binary_prediction, true_labels, 
-                      feature_num, class_num, labels):
+def test_predict_eval(binary_prediction, true_labels, labels, 
+                      # The following two arguments are temporarily not used
+                      feature_num=None, class_num=None):
     """
     Evaluate how the model predicts the labels from images oftest data.
 
     Inputs:
         binary_prediction (numpy array): model prediction of labels
         true_labels (pandas data frame): true labels from test data
+        labels (lst): all possible features
         feature_num (int): total number of features
         class_num (int): total number of classes
-        labels (lst): all possible features
 
     Returns: classifictation report (dic), confusion_matrix (numpy_array),
 
     """
 
     classifi_report = classification_report(true_labels, binary_prediction,
-                                            target_names=labels)
+                                            target_names=labels, zero_division=0)
     
     confusion_matrix = multilabel_confusion_matrix(true_labels, binary_prediction)
 
@@ -299,7 +300,7 @@ def test_predict_eval(binary_prediction, true_labels,
     tpr = dict() # True Positive Rate
     roc_auc = dict()
     for i in range(len(labels)):
-        fpr[i], tpr[i], _ = roc_curve(true_labels[:, i], binary_prediction[:, i])
+        fpr[i], tpr[i], _ = roc_curve(true_labels.iloc[:, i], binary_prediction[:, i])
         roc_auc[i] = auc(fpr[i], tpr[i])
     
     # Temporarily comment out plotting confusion matrix part
