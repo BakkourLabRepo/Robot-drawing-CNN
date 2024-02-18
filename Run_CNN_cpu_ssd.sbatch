@@ -12,4 +12,4 @@ module unload python
 module load python/anaconda-2022.05
 source activate tf
 
-python Run_CNN_Model.py cpu
+python Run_CNN_Model.py --core CPU --environment midway --model_name VGG19
