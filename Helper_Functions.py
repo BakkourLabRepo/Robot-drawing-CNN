@@ -5,10 +5,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, \
     multilabel_confusion_matrix, roc_curve, auc
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from keras.optimizers import Adam
 from keras.metrics import Recall, Precision, BinaryAccuracy
+from keras.preprocessing import image
+from keras.applications.vgg19 import preprocess_input as preprocess_input_vgg19
+from keras.applications.vgg19 import VGG19
 #import matplotlib.pyplot as plt
 #import seaborn
 #import math
@@ -18,7 +21,7 @@ from PIL import Image
 
 
 #################### Helper functions for the robot task #######################
-def images_and_labels(folder_path, feature_num, class_num, labels):
+def images_and_labels(folder_path, model_name, feature_num, class_num, labels):
     """
     Outputs 1) a numpy array where the first dimension equals to the number of 
     robots and the second and third dimensions equal to the pixel*pixel size of 
@@ -28,6 +31,7 @@ def images_and_labels(folder_path, feature_num, class_num, labels):
 
     Inputs:
         folder_path(str): directory where the robot images are stored 
+        model_name (str): model used for fitting
         feature_num (int): number of features
         class_num (int): number of options per class
         labels (lst): all possible labels ("feature * class_num" combinations)
@@ -46,9 +50,13 @@ def images_and_labels(folder_path, feature_num, class_num, labels):
         for f in filenames:
             if f.endswith('.png'):
                 full_path = os.path.join(dirpath, f)
-                # Load image files into a 2D numpy array where 
-                # each value represents a pixel' intensity (from 0 to 255)
-                image_pixels = Image.open(full_path)
+                
+                if model_name == "VGG19":
+                    # For using VGG19, convert it into the target size
+                    image_pixels = image.load_img(full_path, target_size=(224, 224))
+                else:
+                    # Load image files into a 2D numpy array where each value represents a pixel' intensity (from 0 to 255)
+                    image_pixels = Image.open(full_path)
                 image_lst.append(np.asarray(image_pixels))
 
                 # Initilize a row of observation in dataframe as a zero vector
@@ -88,9 +96,8 @@ def data_split(data, split_ratio, random_state):
     return data_train, data_val, data_test
 
 
-def preprocessing(image_array, label_df, 
-                  split_ratio, random_state, 
-                  batch_size):
+def preprocessing(image_array, model_name, label_df, 
+                  split_ratio, random_state, batch_size):
     """
     Preprocesses the image_array (normalized to [0,1]) and label_df into 
     tensorflow objects that are splited into training, validation, and 
@@ -99,6 +106,7 @@ def preprocessing(image_array, label_df,
 
     Inputs:
         image_array (numpy array): image pixel intensities
+        model_name (str): model used for fitting
         label_df (pandas dataframe): rows of "feature vectors" of robots
         split_ratio (tuple): split ratio training, validation, testing dataset
         random_state (int): for reproducibility of data spliting
@@ -106,9 +114,13 @@ def preprocessing(image_array, label_df,
 
     Returns (tensorflow): training dataset, validation dataset, testing dataset
     """
-    
-    # Normalize pixel intensities to [0,1]
-    image_array = image_array / 255.0
+
+    if model_name == "VGG19":
+        # Perform preprocessing steps required for VGG19
+        image_array = preprocess_input_vgg19(image_array)
+    else:
+        # Normalize pixel intensities to [0,1]
+        image_array = image_array / 255.0
 
     # Split dataset according to split ratio
     image_train, image_val, image_test = data_split(image_array, split_ratio,
@@ -223,8 +235,8 @@ def compile_model(model_name, dropout_rate, p_r_threshold, positive_weights, bas
 
     Returns: compiled tensorflow object
     '''
-    # Base model (a simple CNN using 5*5 filters)
     if model_name == "base":
+        # Base model (a simple CNN using 5*5 filters)
         model = Sequential([
             Conv2D(32, (5, 5), activation='relu', input_shape=(750, 750, 1)),
             MaxPooling2D(2, 2),
@@ -239,6 +251,27 @@ def compile_model(model_name, dropout_rate, p_r_threshold, positive_weights, bas
             Dropout(dropout_rate),  
             Dense(30, activation='sigmoid')
         ])
+    elif model_name == "VGG19":
+        # Load VGG19 model pre-trained on ImageNet without the top layer
+        base_model = VGG19(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
+        # Freeze the layers of the base_model
+        for layer in base_model.layers:
+            layer.trainable = False
+        
+        # Create new top layers
+        x = Flatten()(base_model.output)
+        x = Dense(256, activation='relu')(x)
+        x = Dropout(dropout_rate)(x)
+        x = Dense(128, activation='relu')(x)
+        x = Dropout(dropout_rate)(x)
+        x = Dense(30, activation='sigmoid')(x)
+        
+        # Combine the base model and the new top layers
+        model = Model(inputs=base_model.input, outputs=x)
+
+    # Print out the model summary in the terminal
+    print("The model summary: \n")
+    print(model.summary())
 
     # Compile the CNN model
     recall = Recall(thresholds=p_r_threshold)
@@ -249,6 +282,8 @@ def compile_model(model_name, dropout_rate, p_r_threshold, positive_weights, bas
                   optimizer=Adam(learning_rate=base_learning_rate),
                   metrics=[recall, precision, accuracy])
     
+    print("Model compiled.")
+
     return model
 
 def find_last_checkpoint(checkpoint_dir):
