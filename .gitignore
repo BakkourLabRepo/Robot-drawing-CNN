@@ -4,3 +4,7 @@ combs
 ModelCheckpoint
 # Folder storing SavedModel Objects
 SavedModel
+# Folder storing model performance
+ModelPerformance
+# A local Jupyter Notebook used to test code for some intermediate steps
+test.ipynb
