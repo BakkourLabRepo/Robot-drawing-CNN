@@ -1,1 +1,6 @@
+# Folder storing sample robot drawings
 combs
+# Folder storing model checkpoints
+ModelCheckpoint
+# Folder storing SavedModel Objects
+SavedModel
