@@ -5,13 +5,13 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, \
     multilabel_confusion_matrix, roc_curve, auc
-from keras.models import Sequential, Model
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
-from keras.optimizers import Adam
-from keras.metrics import Recall, Precision, BinaryAccuracy
-from keras.utils import load_img
-from keras.applications.vgg19 import preprocess_input as preprocess_input_vgg19
-from keras.applications.vgg19 import VGG19
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.metrics import Recall, Precision, BinaryAccuracy
+from tensorflow.keras.utils import load_img
+from tensorflow.keras.applications.vgg19 import preprocess_input as preprocess_input_vgg19
+from tensorflow.keras.applications.vgg19 import VGG19
 #import matplotlib.pyplot as plt
 #import seaborn
 #import math
