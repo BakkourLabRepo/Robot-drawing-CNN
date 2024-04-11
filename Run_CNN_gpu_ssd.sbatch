@@ -8,12 +8,7 @@
 #SBATCH --mem-per-gpu=30G # mem per GPU
 #SBATCH --gres=gpu:2 # Number of GPUs requested
 
-module unload python cuda cudnn
-module load python/anaconda-2022.05
-module load cuda/11.2
-module load cudnn/11.2
+source /software/tensorflow-el8-x86_64/2.8.4-gcc-8.4.1/tfenv
 export XLA_FLAGS=--xla_gpu_cuda_data_dir=/software/cuda-11.2-el8-x86_64
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/software/sbgrid/x86_64-linux/careless/0.2.7/lib/python3.8/site-packages/tensorrt/
-source activate tf
 
 python Run_CNN_Model.py --core GPU --environment midway --model_name VGG19
