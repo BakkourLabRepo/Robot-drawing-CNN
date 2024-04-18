@@ -1,3 +1,6 @@
+# Front note:
+# To run using CPU cores on midway, use python Run_CNN_Model.py --core CPU --environment midway --model_name VGG19 (you can also refer to `Run_CNN_cpu_ssd.sbatch`)
+
 ####################
 #                  #
 #  Import modules  #
@@ -122,7 +125,12 @@ def main():
     # Define the `robots_stim_path` path storing robot drawings
     if environment == "midway":
         project_path = "/project/bakkour/projects/feat_predict/"
-        robots_stim_path = os.path.join(project_path, "robots", "stim/")
+        # robots_stim_path = os.path.join(project_path, "robots", "stim/")
+        ###############################################################
+        # Note:
+        # For testing the code on midway, here I upload a folder containing a few sample robot drawings
+        robots_stim_path = "test_robot_images/"
+        ###############################################################
     elif environment == "local":
         robots_stim_path = "combs/"
 
