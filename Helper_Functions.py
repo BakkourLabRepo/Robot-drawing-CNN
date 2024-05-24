@@ -253,7 +253,7 @@ def compile_model(model_name, dropout_rate, p_r_threshold, positive_weights, bas
         ])
     elif model_name == "VGG19":
         # Load VGG19 model pre-trained on ImageNet without the top layer
-        base_model = VGG19(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
+        base_model = VGG19(weights="vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5", include_top=False, input_shape=(224, 224, 3))
         # Freeze the layers of the base_model
         for layer in base_model.layers:
             layer.trainable = False
